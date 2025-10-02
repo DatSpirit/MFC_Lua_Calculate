@@ -268,14 +268,14 @@ void CMFCbasicDlg::OnClickedButtonCalc()
 	double dResult = 0.0;
 
 
-	const char* luaFunctionName = nullptr;
+	const char* luaFunctionName = nullptr;// đảm bảo nó không trỏ đến một địa chỉ không xác định ban đầu.
 
-	switch (m_operation)
-	{
-	case 0: luaFunctionName = "LuaAdd"; break;   
-	case 1: luaFunctionName = "LuaMultiply"; break;
-	case 2: luaFunctionName = "LuaSubtract"; break; 
-	case 3: luaFunctionName = "LuaDivide"; break;  
+	switch (m_operation)// chọn tên hàm Lua dựa trên lựa chọn Radio Button (m_operation)
+	{// các phép tính 
+	case 0: luaFunctionName = "LuaAdd"; break;  // cộng 
+	case 1: luaFunctionName = "LuaMultiply"; break; // nhân
+	case 2: luaFunctionName = "LuaSubtract"; break; // trừ
+	case 3: luaFunctionName = "LuaDivide"; break;  // chia
 
 	}
 
@@ -318,11 +318,6 @@ void CMFCbasicDlg::OnClickedButtonCalc()
 		return;
 	}
 
-
-	//thêm code trong Word
-
-
-	
 
 	// BƯỚC 3: ĐẨY KẾT QUẢ RA UI
 	m_result = dResult;
