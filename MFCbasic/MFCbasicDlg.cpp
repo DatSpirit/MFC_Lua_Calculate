@@ -16,16 +16,6 @@ extern "C" {
 }
 
 
-
-
-//#include <sstream> // std::stringstream
-//#include <iomanip> // định dạng số thập phân
-//#include <locale>
-//#include <string> 
-//#include <stdexcept>  // Cần cho try/catch
-//#include <atlbase.h>  // Cần cho ATL/OLE2 conversion macros
-//#include <atlconv.h>  // Cần cho ATL/OLE2 conversion macros
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -103,7 +93,7 @@ CMFCbasicDlg::~CMFCbasicDlg()
 // Định nghĩa hàm static đã khai báo ở MFCbasicDlg.h
 int CMFCbasicDlg::Lua_ShowMessageBox(lua_State* L)
 {
-	// Lấy đối tượng CMFCbasicDlg hiện tại (cần để gọi MessageBox của MFC)
+	// Lấy đối tượng CMFCbasicDlg hiện tại 
 	CMFCbasicDlg* pDlg = (CMFCbasicDlg*)AfxGetMainWnd();
 
 	// Kiểm tra và lấy tham số đầu tiên (chuỗi)
@@ -112,23 +102,73 @@ int CMFCbasicDlg::Lua_ShowMessageBox(lua_State* L)
 		// Lấy chuỗi từ stack Lua
 		const char* message = lua_tostring(L, 1);
 
-		// Thực hiện hành động C++ (Hiển thị MFC MessageBox)
+		// Hiển thị MFC MessageBox
 		if (pDlg)
 		{
-			pDlg->MessageBox(CString(message), _T("Notification from Lua"));
+			pDlg->MessageBox(CString(message), _T("Lua"));
 		}
 	}
 
 	// Trả về số lượng giá trị trả về cho Lua (0 giá trị)
 	return 0;
 }
+
+
+// Thêm định nghĩa IsValidNumber 
+bool CMFCbasicDlg::IsValidNumber(const CString& str)
+{
+	// Chuẩn bị chuỗi
+	CString cleanStr = str;
+	cleanStr.Trim();
+
+	if (cleanStr.IsEmpty()) return true; 
+
+	bool bHasDecimal = false;
+	bool bHasSign = false;
+	int nLen = cleanStr.GetLength();
+
+	for (int i = 0; i < nLen; ++i)
+	{
+		TCHAR c = cleanStr[i];
+
+		// Chấp nhận (-) hoặc (+) 
+		if (c == _T('-') || c == _T('+'))
+		{
+			if (i != 0 || bHasSign) return false; // Dấu phải ở đầu và only one
+			bHasSign = true;
+			continue;
+		}
+
+		// Chấp nhận dấu thập phân 
+		if (c == _T('.'))
+		{
+			if (bHasDecimal) return false; // only one
+			bHasDecimal = true;
+			continue;
+		}
+
+		// Chấp nhận các chữ số (0-9)
+		if (_istdigit(c))
+		{
+			continue;
+		}
+
+		// Bất kỳ ký tự nào khác đều không hợp lệ
+		return false;
+	}
+	return true; // Hợp lệ
+}
+
+
 // CMFCbasicDlg message handlers
 
 BOOL CMFCbasicDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// Add "About..." menu item to system menu.
+	SetDlgItemText(IDC_EDIT_NUM1, _T(""));
+	SetDlgItemText(IDC_EDIT_NUM2, _T(""));
+	SetDlgItemText(IDC_EDIT_RESULT, _T(""));
 
 	// IDM_ABOUTBOX must be in the system command range.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -180,6 +220,7 @@ BOOL CMFCbasicDlg::OnInitDialog()
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
+
 
 void CMFCbasicDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -244,6 +285,7 @@ void CMFCbasicDlg::OnClickedButtonCalc()
 	strNum1.Trim();
 	strNum2.Trim();
 
+	//kiểm tra bỏ trống giá trị 
 	if (strNum1.IsEmpty() || strNum2.IsEmpty())
 	{
 		MessageBox(_T("Vui lòng nhập giá trị vào cả hai ô số."), _T("Error!"), MB_ICONERROR);
@@ -252,17 +294,16 @@ void CMFCbasicDlg::OnClickedButtonCalc()
 		UpdateData(FALSE);
 		return;
 	}
-
-	// LẤY DỮ LIỆU TỪ UI (DDX)
-	// BÁO LỖI nếu gặp ký tự và return FALSE
-	if (!UpdateData(TRUE))
+	// kiểm tra ký tự ko hợp lệ
+	if (!IsValidNumber(strNum1) || !IsValidNumber(strNum2))
 	{
-		
-		MessageBox(_T("Vui lòng nhập số hợp lệ."), _T("Error!"), MB_ICONERROR);
+		MessageBox(_T("Vui lòng chỉ nhập các ký tự là số."), _T("Error!"), MB_ICONERROR);
 		m_result = 0.0;
-		UpdateData(FALSE); // Xóa kết quả cũ
+		UpdateData(FALSE);
 		return;
 	}
+	// lấy dữ liệu từ UI
+	UpdateData(TRUE);
 
 	//  THỰC HIỆN TÍNH TOÁN
 	double dResult = 0.0;
@@ -323,3 +364,4 @@ void CMFCbasicDlg::OnClickedButtonCalc()
 	m_result = dResult;
 	UpdateData(FALSE); // Đẩy giá trị m_result ra IDC_EDIT_RESULT
 }
+

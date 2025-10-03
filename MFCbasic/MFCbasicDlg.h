@@ -27,7 +27,7 @@ public:
 	enum { IDD = IDD_MFCBASIC_DIALOG };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
 
@@ -43,6 +43,8 @@ protected:
 // Hàm C++ được đăng ký và gọi từ Lua 
 	static int Lua_ShowMessageBox(lua_State* L);
 	
+private:
+	bool IsValidNumber(const CString& str);// hàm lọc ký tự ko hợp lệ
 
 public:
 	double m_num1;

@@ -28,4 +28,4 @@ end
 
 
 -- Lua Call C++: Gọi hàm C++ ngay khi script được tải
-ShowMessageBox("ScLua script loaded successfully! Startup table initialized successfully!")
+ShowMessageBox(" Sclua script loaded successfully! ")
